@@ -102,40 +102,9 @@ public:
 		}
 		timer = clock_t::now();
 
-		setupGL();
 	}
 
-	void setupGL()
-	{
-		typedef void (APIENTRY* PFNWGLEXTSWAPCONTROLPROC) (int);
-		typedef int (*PFNWGLEXTGETSWAPINTERVALPROC) (void);
-		PFNWGLEXTSWAPCONTROLPROC wglSwapIntervalEXT = NULL;
-		PFNWGLEXTGETSWAPINTERVALPROC wglGetSwapIntervalEXT = NULL;
-		
-		typedef const char* (WINAPI* PFNWGLGETEXTENSIONSSTRINGEXTPROC)(void);
 
-		// this is pointer to function which returns pointer to string with list of all wgl extensions
-		PFNWGLGETEXTENSIONSSTRINGEXTPROC _wglGetExtensionsStringEXT = NULL;
-
-		// determine pointer to wglGetExtensionsStringEXT function
-		_wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
-
-		if (strstr(_wglGetExtensionsStringEXT(), "WGL_EXT_swap_control") == NULL)
-		{
-			// string was not found
-			assert(0 && "cannot get swap control");
-			return ;
-		}
-
-		// Extension is supported, init pointers.
-		wglSwapIntervalEXT = (PFNWGLEXTSWAPCONTROLPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-		// this is another function from WGL_EXT_swap_control extension
-		wglGetSwapIntervalEXT = (PFNWGLEXTGETSWAPINTERVALPROC)wglGetProcAddress("wglGetSwapIntervalEXT");
-
-		wglSwapIntervalEXT(0);
-	
-	}
 
 	void gui(float dtime)
 	{
