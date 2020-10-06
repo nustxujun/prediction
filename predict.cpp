@@ -123,8 +123,8 @@ public:
 
 		ImGui::Checkbox("show box2d", &Common::box2d);
 		ImGui::Checkbox("show visual", &Common::visual);
+		ImGui::Checkbox("show filter", &Common::filter);
 		ImGui::Checkbox("enable graivity", &Common::gravity);
-		ImGui::Checkbox("enable filter", &Common::filter);
 		ImGui::Checkbox("enable predict", &Common::predict);
 		ImGui::SliderInt("predict count", &Common::predictCount, 1, 16);
 		ImGui::Checkbox("focus on visual", &Common::focus);
@@ -148,7 +148,7 @@ public:
 			Common::downloadloss = 0.0;
 			Common::uploadlag = 0.1;
 			Common::uploadloss = 0.1;
-			Common::predictCount = 3;
+			Common::predictCount = 16;
 		}
 
 		ImGui::SameLine();
@@ -159,7 +159,7 @@ public:
 			Common::downloadloss = 0.05;
 			Common::uploadlag = 0.1;
 			Common::uploadloss = 0.05;
-			Common::predictCount = 3;
+			Common::predictCount = 8;
 		}
 
 
@@ -237,7 +237,7 @@ public:
 			server->update(constraint.interval);
 			for (auto& c : clients)
 			{
-				c->update(constraint.interval);
+				c->update(constraint.interval, server);
 			}
 
 		}

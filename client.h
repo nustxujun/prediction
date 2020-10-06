@@ -16,7 +16,13 @@ class Client
 	size_t curFrameID;
 	std::list<Frame> frames;
 
-	Inputs sendCache;
+	struct Packet
+	{
+		size_t frameid;
+		Inputs inputs;
+		float time;
+	};
+	std::list<Packet> sendCache;
 	float sendTime = 0;
 	
 	struct FrameMsg
@@ -67,7 +73,7 @@ public:
 	void sync();
 	void send(Server* server);
 	bool receive(const Frame& f);
-	void update(float interval);
+	void update(float interval, Server* server);
 
 	void addInput(int a, bool val);
 

@@ -16,37 +16,39 @@ Client::Client()
 
 void Client::send(Server* server)
 {
-	predicter.inputFromClient(records);
+	auto frameid = predicter.inputFromClient(records);
 
 	static float timer = 0;
 
 	//collect inputs 
-	for (auto& j : records)
+	sendCache.push_back({ frameid,records });
+	
+
+
+	while (!sendCache.empty())
 	{
-		sendCache[j.first] |= j.second;
+		auto& packet = sendCache.front();
+		// lost packet
+		if (Common::lost(Common::uploadloss))
+		{
+			timer += packet.time;
+			packet.time = 0;
+			return;
+		}
+
+		// lag packet
+		if (packet.time < Common::uploadlag)
+			return;
+
+		//record latency
+		timer += packet.time;
+		latency.up = latency.up * 0.9 + timer * 0.1;
+		timer = 0;
+
+		//success
+		server->addInputs(id, packet.frameid, packet.inputs);
+		sendCache.pop_front();
 	}
-
-	// lost packet
-	if (Common::lost(Common::uploadloss))
-	{
-		timer += sendTime;
-		sendTime = 0;
-		return;
-	}
-
-	// lag packet
-	if (sendTime < Common::uploadlag)
-		return;
-
-	//record latency
-	timer += sendTime;
-	latency.up = latency.up * 0.9 + timer * 0.1;
-	timer = 0;
-	sendTime = 0;
-
-	//success
-	server->addInputs(id, sendCache);
-	sendCache.clear();
 }
 
 bool Client::receive(const Frame& frame)
@@ -81,8 +83,12 @@ bool Client::receive(const Frame& frame)
 	}
 	return true;
 }
-void Client::update(float interval)
+void Client::update(float interval, Server* server)
 {
+	if (Common::predict)
+		predicter.curFrameID = Common::predictCount + server->getFrameID() - 2;
+	else
+		predicter.curFrameID = server->getFrameID() - 1;
 	predicter.predict(interval);
 	predicter.update();
 
@@ -92,7 +98,10 @@ void Client::update(float interval)
 		Common::latency = latency.up + latency.down;
 
 
-	sendTime += interval;
+	for (auto& p : sendCache)
+	{
+		p.time += interval;
+	}
 	for (auto& p : receiveCache)
 	{
 		p.time += interval;

@@ -7,13 +7,17 @@ Server::Server(b2World* w):
 {
 	Physics::constructWorld(w);
 
-
 }
 
 void Server::preupdate()
 {
-	curframe.id++;
 
+	curFrameID++;
+	auto& curframe = frames[curFrameID];
+	curframe.id = curFrameID;
+
+
+	//curframe.id++;
 	for (auto& c : clients)
 	{
 		auto& state = curframe.states[c.client->id];
@@ -31,16 +35,17 @@ void Server::preupdate()
 
 void Server::update(float dtime)
 {
+
 	preupdate();
 
+	
 	world->Step(dtime, 8, 3);
-
 	postupdate(dtime);
-
 }
 
 void Server::postupdate(float dtime)
 {
+	auto& curframe = frames.begin()->second;
 	// readback to logic
 	for (auto& c : clients)
 	{
@@ -58,6 +63,9 @@ void Server::postupdate(float dtime)
 	{
 		c.client->receive(curframe);
 	}
+
+
+	frames.erase(frames.begin());
 }
 
 void Server::addClient( Client* client)
@@ -65,13 +73,14 @@ void Server::addClient( Client* client)
 	clients.push_back({ client , Physics::createEntity(world)});
 }
 
-void Server::addInputs(size_t id, const Inputs & inputs)
+void Server::addInputs(size_t id, size_t frameid, const Inputs & inputs)
 {
-	auto& state = curframe.states[id];
-	state.inputs = inputs;
+	Frame* frame = &frames.begin()->second;
+	if (frame->id < frameid)
+		frame = &frames[frameid];
+
+	frame->states[id].inputs = inputs;
+	//auto& state = curframe.states[id];
+	//state.inputs = inputs;
 }
 
-const Frame& Server::getFrame()
-{
-	return curframe;
-}

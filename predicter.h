@@ -15,19 +15,20 @@ class Predicter
 		float interval;
 	};
 
-	size_t curFrameID = 0;
 	std::list<Frame> frames;
 	Inputs inputs;
 
 	b2World* world;
 	b2Body* body;
 public:
+	size_t curFrameID = 0;
+
 	Filter* filter = 0;
 	Client* client = 0;
 	
 	Predicter();
 	void inputFromServer(int id, b2Vec2 pos, b2Vec2 vel);
-	void inputFromClient(Inputs inputs);
+	size_t inputFromClient(Inputs inputs);
 	void predict(float interval);
 
 	void update();

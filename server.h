@@ -4,8 +4,8 @@
 class Client;
 class Server
 {
-
-	Frame curframe;
+	size_t curFrameID = 0;
+	std::map<size_t , Frame> frames;
 
 
 	struct Unit
@@ -25,7 +25,7 @@ public:
 	void postupdate(float dtime);
 
 	void addClient( Client* client);
-	void addInputs(size_t id, const Inputs& inputs);
-	const Frame& getFrame();
+	void addInputs(size_t id, size_t frameid,  const Inputs& inputs);
 
+	size_t getFrameID()const { return curFrameID; }
 };

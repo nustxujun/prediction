@@ -16,7 +16,7 @@ b2World* Physics::constructWorld(b2World* world)
 
 	fd.shape = &sd;
 	fd.density = 1.0f;
-	fd.restitution = 0.0f;
+	fd.restitution = 0.0f;  
 	fd.friction = 1.0f;
 	auto fixture = body->CreateFixture(&fd);
 

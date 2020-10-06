@@ -55,7 +55,6 @@ void Predicter::recover(b2Vec2 pos, b2Vec2 vel)
 
 void Predicter::inputFromServer(int id, b2Vec2 pos, b2Vec2 vel)
 {
-	id = id - Common::predictCount + 1;
 	while (!frames.empty())
 	{
 		auto& first = frames.front();
@@ -85,9 +84,10 @@ void Predicter::inputFromServer(int id, b2Vec2 pos, b2Vec2 vel)
 
 }
 
-void Predicter::inputFromClient(Inputs i)
+size_t Predicter::inputFromClient(Inputs i)
 {	
 	inputs = std::move(i);
+	return curFrameID + 1;
 }
 
 void Predicter::predict(float interval)
