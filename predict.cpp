@@ -31,7 +31,7 @@ int Common::predictCount = 1;
 bool Common::focus = true;
 ImGuiTextBuffer Common::logContext;
 float Common::latency = 0;
-
+float Common::stun = 0;
 
 b2Vec2 Common::linearVel;
 
@@ -109,17 +109,36 @@ public:
 	void gui(float dtime)
 	{
 
+
 		static float cache = 60.0f;
 		cache = cache * 0.99f + (1.0f / dtime) * 0.01f;
 		ImGui::Begin("control panel");
-		//ImGui::Text("fps: %.3f", cache);
+		ImGui::Text("up: W, left: A, right: D");
+		ImGui::NewLine();
 		ImGui::SetWindowSize({ 400,800 });
-		ImGui::SliderFloat("upload loss", &Common::uploadloss, 0.0f, 1.0f);
-		ImGui::SliderFloat("download loss", &Common::downloadloss, 0.0f, 1.0f);
-		ImGui::SliderFloat("upload lag", &Common::uploadlag, 0.0f, 1.0f);
-		ImGui::SliderFloat("download lag", &Common::downloadlag, 0.0f, 1.0f);
-		ImGui::Text("latency %.3f", Common::latency);
-		ImGui::SliderInt("limit fps", &Common::fps, 1, 60);
+
+
+
+		bool changed = false;
+		changed |= ImGui::SliderFloat("upload loss", &Common::uploadloss, 0.0f, 1.0f);
+		changed |= ImGui::SliderFloat("download loss", &Common::downloadloss, 0.0f, 1.0f);
+		changed |= ImGui::SliderFloat("upload lag", &Common::uploadlag, 0.0f, 1.0f);
+		changed |= ImGui::SliderFloat("download lag", &Common::downloadlag, 0.0f, 1.0f);
+		static auto max_latency = Common::latency;
+		if (changed)
+			max_latency = Common::latency;
+		max_latency = max(Common::latency, max_latency);
+		static auto latency = Common::latency;
+		latency = latency * 0.9 + Common::latency * 0.1;
+		ImGui::Text("latency: %.3f, max: %.3f", latency, max_latency);
+		changed = ImGui::SliderInt("limit fps", &Common::fps, 1, 60);
+		changed |= ImGui::SliderFloat("stun logic thread", &Common::stun,0.0f, 1.0f);
+		static float max_dtime = dtime;
+		if (changed)
+			max_dtime = dtime;
+		max_dtime = max(max_dtime, dtime);
+		ImGui::Text("dtime : %.3f, max: %0.3f", dtime, max_dtime);
+
 
 		ImGui::Checkbox("show box2d", &Common::box2d);
 		ImGui::Checkbox("show visual", &Common::visual);
@@ -128,7 +147,7 @@ public:
 		ImGui::Checkbox("enable predict", &Common::predict);
 		ImGui::SliderInt("predict count", &Common::predictCount, 1, 16);
 		ImGui::Checkbox("focus on visual", &Common::focus);
-		ImGui::Text("linear velocity: %.3f, %.3f", Common::linearVel.x, Common::linearVel.y);
+
 
 		if (ImGui::Button("test1"))
 		{
@@ -162,7 +181,7 @@ public:
 			Common::predictCount = 8;
 		}
 
-
+		ImGui::NewLine();
 		ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -224,13 +243,14 @@ public:
 		timer = cur;
 		constraint += dtime;
 
-		gui(dtime);
 
 
 		g_debugDraw.SetFlags(1);
 
-		while (constraint.costOneFrame())
+		int count = 0;
+		while (!Common::lost(Common::stun) && constraint.costOneFrame())
 		{
+			count++;
 			cpu(constraint.interval);
 
 
@@ -241,6 +261,9 @@ public:
 			}
 
 		}
+
+		gui(count * constraint.interval);
+
 
 		for (auto& c : clients)
 			c->visualize(dtime, constraint.interval);

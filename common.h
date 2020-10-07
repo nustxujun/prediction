@@ -29,6 +29,7 @@ struct Common
 	static float downloadlag;
 
 	static int fps;
+	static float stun;
 
 	static bool box2d;
 	static bool visual;

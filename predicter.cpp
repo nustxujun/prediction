@@ -13,8 +13,12 @@ void Predicter::recover(b2Vec2 pos, b2Vec2 vel)
 
 	frames.pop_front();
 
+	auto oldpos = body->GetPosition();
+	Common::log("%d recover: %.7f , %.7f -> %.7f , %.7f\n", client->id,oldpos.x, oldpos.y, pos.x, pos.y);
+
 	//correct body transform from server
 	auto ang = body->GetAngle();
+
 	body->SetTransform(pos, ang);
 	body->SetLinearVelocity(vel);
 
@@ -49,7 +53,6 @@ void Predicter::recover(b2Vec2 pos, b2Vec2 vel)
 
 
 	//std::cout << "recover" << pos.x << "," << pos.y << std::endl;
-	Common::log("%d recover: %.7f, , %.7f\n",client->id, pos.x, pos.y);
 }
 
 

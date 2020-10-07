@@ -42,7 +42,7 @@ void Client::send(Server* server)
 
 		//record latency
 		timer += packet.time;
-		latency.up = latency.up * 0.9 + timer * 0.1;
+		latency.up =  timer ;
 		timer = 0;
 
 		//success
@@ -74,7 +74,7 @@ bool Client::receive(const Frame& frame)
 		}
 
 		timer += first.time;
-		latency.down = latency.down * 0.99 + timer * 0.01;
+		latency.down = timer ;
 		timer = 0;
 
 		//success
@@ -141,15 +141,16 @@ void Client::visualize(float dtime, float interval)
 
 	auto pos = state.pos;
 
-	pos = filter.update(dtime, interval);
 
 	if (Common::visual)
 		g_debugDraw.DrawCircle(state.pos, 1.0f, { 1,0,0,0 });
 
 
 	if (Common::filter)
+	{
+		pos = filter.update(dtime, interval);
 		g_debugDraw.DrawCircle(pos, 1.0f, { 0,1,0,1 });
-
+	}
 
 
 	if (Common::focus && focus)
@@ -160,4 +161,6 @@ void Client::visualize(float dtime, float interval)
 			g_camera.m_center = state.pos;
 		//Common::linearVel = state.vel;
 	}
+
+
 }
